@@ -4,10 +4,10 @@ import sys
 import textwrap
 import subprocess
 
-import diff
-import base
-import data
-import remote
+from . import diff
+from . import base
+from . import data
+from . import remote
 
 
 def main ():

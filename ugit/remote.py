@@ -1,6 +1,6 @@
 import os
-import data
-import base
+from . import data
+from . import base
 
 
 REMOTE_REFS_BASE = 'refs/heads/'

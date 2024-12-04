@@ -4,8 +4,8 @@ import operator
 from collections import deque, namedtuple
 import string
 
-import diff
-import data
+from . import diff
+from . import data
 
 def init ():
     data.init ()
