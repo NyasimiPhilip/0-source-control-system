@@ -17,93 +17,100 @@ def main ():
 
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description='ugit: A lightweight implementation of Git in Python'
+    )
 
-    commands = parser.add_subparsers(dest='command')
+    commands = parser.add_subparsers(dest='command', help='Available commands')
     commands.required = True
 
     oid = base.get_oid
 
-    init_parser = commands.add_parser('init')
+    init_parser = commands.add_parser('init', help='Initialize a new repository')
     init_parser.set_defaults(func=init)
 
-    hash_object_parser = commands.add_parser ('hash-object')
-    hash_object_parser.set_defaults (func=hash_object)
-    hash_object_parser.add_argument ('file')
+    hash_object_parser = commands.add_parser('hash-object', help='Compute object hash')
+    hash_object_parser.set_defaults(func=hash_object)
+    hash_object_parser.add_argument('file', help='File to hash')
 
-    cat_file_parser = commands.add_parser ('cat-file')
-    cat_file_parser.set_defaults (func=cat_file)
-    cat_file_parser.add_argument ('object', type=oid)
+    cat_file_parser = commands.add_parser('cat-file', help='Display object contents')
+    cat_file_parser.set_defaults(func=cat_file)
+    cat_file_parser.add_argument('object', type=oid, help='Object to display')
 
-    write_tree_parser = commands.add_parser ('write-tree')
-    write_tree_parser.set_defaults (func=write_tree)
+    write_tree_parser = commands.add_parser('write-tree', help='Create a tree object')
+    write_tree_parser.set_defaults(func=write_tree)
 
-    read_tree_parser = commands.add_parser ('read-tree')
-    read_tree_parser.set_defaults (func=read_tree)
-    read_tree_parser.add_argument ('tree', type=oid)
+    read_tree_parser = commands.add_parser('read-tree', help='Read a tree object')
+    read_tree_parser.set_defaults(func=read_tree)
+    read_tree_parser.add_argument('tree', type=oid, help='Tree to read')
 
-    commit_parser = commands.add_parser ('commit')
-    commit_parser.set_defaults (func=commit)
-    commit_parser.add_argument ('-m', '--message', required=True)
+    commit_parser = commands.add_parser('commit', help='Create a new commit')
+    commit_parser.set_defaults(func=commit)
+    commit_parser.add_argument('-m', '--message', required=True, help='Commit message')
 
-    log_parser = commands.add_parser ('log')
-    log_parser.set_defaults (func=log)
-    log_parser.add_argument ('oid', default='@', type=oid, nargs='?')
+    log_parser = commands.add_parser('log', help='Show commit history')
+    log_parser.set_defaults(func=log)
+    log_parser.add_argument('oid', default='@', type=oid, nargs='?', help='Commit to start from')
 
-    show_parser = commands.add_parser ('show')
-    show_parser.set_defaults (func=show)
-    show_parser.add_argument ('oid', default='@', type=oid, nargs='?')
+    show_parser = commands.add_parser('show', help='Show commit details')
+    show_parser.set_defaults(func=show)
+    show_parser.add_argument('oid', default='@', type=oid, nargs='?', help='Commit to show')
 
-    diff_parser = commands.add_parser ('diff')
-    diff_parser.set_defaults (func=_diff)
-    diff_parser.add_argument ('--cached', action='store_true')
-    diff_parser.add_argument ('commit', nargs='?')
+    diff_parser = commands.add_parser('diff', help='Show changes between commits')
+    diff_parser.set_defaults(func=_diff)
+    diff_parser.add_argument('--cached', action='store_true', help='Show changes staged for commit')
+    diff_parser.add_argument('commit', nargs='?', help='Commit to diff against')
 
-    checkout_parser = commands.add_parser ('checkout')
-    checkout_parser.set_defaults (func=checkout)
-    checkout_parser.add_argument ('commit')
+    checkout_parser = commands.add_parser('checkout', help='Switch branches or restore files')
+    checkout_parser.set_defaults(func=checkout)
+    checkout_parser.add_argument('commit', help='Commit or branch to checkout')
 
-    tag_parser = commands.add_parser ('tag')
-    tag_parser.set_defaults (func=tag)
-    tag_parser.add_argument ('name')
-    tag_parser.add_argument ('oid', default='@', type=oid, nargs='?')
+    tag_parser = commands.add_parser('tag', help='Create a new tag')
+    tag_parser.set_defaults(func=tag)
+    tag_parser.add_argument('name', help='Tag name')
+    tag_parser.add_argument('oid', default='@', type=oid, nargs='?', help='Object to tag')
 
-    branch_parser = commands.add_parser ('branch')
-    branch_parser.set_defaults (func=branch)
-    branch_parser.add_argument ('name', nargs='?')
-    branch_parser.add_argument ('start_point', default='@', type=oid, nargs='?')
+    branch_parser = commands.add_parser('branch', help='List or create branches')
+    branch_parser.set_defaults(func=branch)
+    branch_parser.add_argument('name', nargs='?', help='Branch name')
+    branch_parser.add_argument('start_point', default='@', type=oid, nargs='?', help='Start point for the branch')
 
-    k_parser = commands.add_parser ('k')
-    k_parser.set_defaults (func=k)
+    k_parser = commands.add_parser('k', help='Visualize commit history')
+    k_parser.set_defaults(func=k)
 
-    status_parser = commands.add_parser ('status')
-    status_parser.set_defaults (func=status)
+    status_parser = commands.add_parser('status', help='Show working tree status')
+    status_parser.set_defaults(func=status)
 
-    reset_parser = commands.add_parser ('reset')
-    reset_parser.set_defaults (func=reset)
-    reset_parser.add_argument ('commit', type=oid)
+    reset_parser = commands.add_parser('reset', help='Reset current HEAD to the specified state')
+    reset_parser.set_defaults(func=reset)
+    reset_parser.add_argument('commit', type=oid, help='Commit to reset to')
 
-    merge_parser = commands.add_parser ('merge')
-    merge_parser.set_defaults (func=merge)
-    merge_parser.add_argument ('commit', type=oid)
+    merge_parser = commands.add_parser('merge', help='Join two or more development histories')
+    merge_parser.set_defaults(func=merge)
+    merge_parser.add_argument('commit', type=oid, help='Commit to merge into the current branch')
 
-    merge_base_parser = commands.add_parser ('merge-base')
-    merge_base_parser.set_defaults (func=merge_base)
-    merge_base_parser.add_argument ('commit1', type=oid)
-    merge_base_parser.add_argument ('commit2', type=oid)
+    merge_base_parser = commands.add_parser('merge-base', help='Find best common ancestor of two commits')
+    merge_base_parser.set_defaults(func=merge_base)
+    merge_base_parser.add_argument('commit1', type=oid, help='First commit')
+    merge_base_parser.add_argument('commit2', type=oid, help='Second commit')
 
-    fetch_parser = commands.add_parser ('fetch')
-    fetch_parser.set_defaults (func=fetch)
-    fetch_parser.add_argument ('remote')
+    fetch_parser = commands.add_parser('fetch', help='Download objects and refs from another repository')
+    fetch_parser.set_defaults(func=fetch)
+    fetch_parser.add_argument('remote', help='Remote repository to fetch from')
 
-    push_parser = commands.add_parser ('push')
-    push_parser.set_defaults (func=push)
-    push_parser.add_argument ('remote')
-    push_parser.add_argument ('branch')
+    push_parser = commands.add_parser('push', help='Update remote refs along with associated objects')
+    push_parser.set_defaults(func=push)
+    push_parser.add_argument('remote', help='Remote repository to push to')
+    push_parser.add_argument('branch', help='Branch to push')
 
-    add_parser = commands.add_parser ('add')
-    add_parser.set_defaults (func=add)
-    add_parser.add_argument ('files', nargs='+')
+    add_parser = commands.add_parser('add', help='Add file contents to the index')
+    add_parser.set_defaults(func=add)
+    add_parser.add_argument('files', nargs='+', help='Files to add')
+
+    clone_parser = commands.add_parser('clone', help='Clone a repository into a new directory')
+    clone_parser.set_defaults(func=clone)
+    clone_parser.add_argument('remote', help='Remote repository to clone')
+    clone_parser.add_argument('target', help='Target directory for the clone')
 
     return parser.parse_args()
 
@@ -265,3 +272,6 @@ def push (args):
 
 def add (args):
     base.add (args.files)
+
+def clone(args):
+    remote.clone(args.remote, args.target)

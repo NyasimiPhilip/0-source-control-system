@@ -49,3 +49,21 @@ def push (remote_path, refname):
 def _get_remote_refs (remote_path, prefix=''):
     with data.change_git_dir (remote_path):
         return {refname: ref.value for refname, ref in data.iter_refs (prefix)}
+
+def clone(remote_path, target_path):
+    # Create the target directory if it doesn't exist
+    os.makedirs(target_path, exist_ok=True)
+
+    # Initialize a new repository in the target path
+    with data.change_git_dir(target_path):
+        data.init()
+
+    # Fetch all objects and refs from the remote repository
+    refs = _get_remote_refs(remote_path)
+    for oid in base.iter_objects_in_commits(refs.values()):
+        data.fetch_object_if_missing(oid, remote_path)
+
+    # Update local refs to match the remote
+    with data.change_git_dir(target_path):
+        for refname, oid in refs.items():
+            data.update_ref(refname, data.RefValue(symbolic=False, value=oid))
