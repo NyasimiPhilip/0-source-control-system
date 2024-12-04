@@ -116,8 +116,10 @@ def parse_args():
 
 
 def init(args):
-    base.init ()
+    print("Starting initialization...")
+    base.init()
     print(f'Initialized empty ugit repository in {os.getcwd()}/{data.GIT_DIR}')
+    print("Initialization complete")
 
 def hash_object (args):
     with open (args.file, 'rb') as f:

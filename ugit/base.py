@@ -8,8 +8,13 @@ from . import diff
 from . import data
 
 def init ():
-    data.init ()
+    print("Creating .ugit directory...")  # Debug print
+    if not os.path.exists(data.GIT_DIR):
+        os.makedirs(data.GIT_DIR)
+        os.makedirs(f'{data.GIT_DIR}/objects', exist_ok=True)
+    print("Setting up HEAD reference...")  # Debug print
     data.update_ref ('HEAD', data.RefValue (symbolic=True, value='refs/heads/master'))
+    print("Init complete")  # Debug print
 
 
 def write_tree ():
