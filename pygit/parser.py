@@ -75,12 +75,12 @@ def _add_remote_commands(commands_parser):
     # Fetch
     fetch_parser = commands_parser.add_parser('fetch', help='Download objects from remote')
     fetch_parser.set_defaults(func=commands.fetch)
-    fetch_parser.add_argument('remote', help='Remote to fetch from')
+    fetch_parser.add_argument('remote', help='Path to remote repository')
 
     # Push
     push_parser = commands_parser.add_parser('push', help='Update remote refs and objects')
     push_parser.set_defaults(func=commands.push)
-    push_parser.add_argument('remote', help='Remote to push to')
+    push_parser.add_argument('remote', help='Remote repository path')
     push_parser.add_argument('branch', help='Branch to push')
 
 def _add_plumbing_commands(commands_parser):

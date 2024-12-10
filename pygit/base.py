@@ -106,12 +106,24 @@ def _empty_current_directory ():
                 pass
 
 def read_tree (tree_oid, update_working=False):
+    """Read a tree into the index and optionally update working directory"""
     with data.get_index () as index:
         index.clear ()
-        index.update (get_tree (tree_oid))
-
-        if update_working:
-            _checkout_index (index)
+        for path, oid in get_tree (tree_oid, base_path='').items ():
+            index[path] = oid
+            if update_working:
+                # Skip if path is empty
+                if not path:
+                    continue
+                    
+                # Create directory if needed
+                dir_path = os.path.dirname(path)
+                if dir_path:  # Only create directory if path is not empty
+                    os.makedirs(dir_path, exist_ok=True)
+                    
+                # Write file contents
+                with open(path, 'wb') as f:
+                    f.write(data.get_object(oid))
 
 
 def read_tree_merged (t_base, t_HEAD, t_other, update_working=False):

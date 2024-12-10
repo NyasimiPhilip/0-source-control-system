@@ -144,15 +144,29 @@ def object_exists (oid):
     return os.path.isfile (f'{GIT_DIR}/objects/{oid}')
 
 
-def fetch_object_if_missing (oid, remote_git_dir):
+def fetch_object_if_missing (oid, remote_path):
+    """Fetch an object from a remote repository if it doesn't exist locally"""
     if object_exists (oid):
         return
-    remote_git_dir += '/.pygit'
-    shutil.copy (f'{remote_git_dir}/objects/{oid}',
-                 f'{GIT_DIR}/objects/{oid}')
+        
+    # Ensure objects directory exists
+    os.makedirs(f'{GIT_DIR}/objects', exist_ok=True)
+    
+    remote_git_dir = f'{remote_path}/.pygit'
+    src = f'{remote_git_dir}/objects/{oid}'
+    dst = f'{GIT_DIR}/objects/{oid}'
+    
+    shutil.copy(src, dst)
 
-def push_object (oid, remote_git_dir):
-    remote_git_dir += '/.pygit'
-    shutil.copy (f'{GIT_DIR}/objects/{oid}',
-                 f'{remote_git_dir}/objects/{oid}')
+def push_object (oid, remote_path):
+    """Push an object to a remote repository"""
+    remote_git_dir = f'{remote_path}/.pygit'
+    
+    # Ensure remote objects directory exists
+    os.makedirs(f'{remote_git_dir}/objects', exist_ok=True)
+    
+    src = f'{GIT_DIR}/objects/{oid}'
+    dst = f'{remote_git_dir}/objects/{oid}'
+    
+    shutil.copy(src, dst)
 

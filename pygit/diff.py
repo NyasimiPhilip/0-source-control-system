@@ -1,6 +1,5 @@
 from collections import defaultdict
-import subprocess
-from tempfile import NamedTemporaryFile as Temp
+import os
 from . import data
 
 def compare_trees(*trees):
@@ -21,75 +20,68 @@ def iter_changed_files(t_from, t_to):
                      'modified')
             yield path, action
 
+def is_text_file(path):
+    """Check if a file is a text file based on extension"""
+    text_extensions = {
+        '.txt', '.md', '.py', '.js', '.css', '.html', '.json', 
+        '.yml', '.yaml', '.xml', '.csv', '.ini', '.conf',
+        '.sh', '.bat', '.ps1', '.c', '.cpp', '.h', '.java',
+        '.rb', '.php', '.pl', '.sql', '.go', '.rs', '.ts'
+    }
+    return os.path.splitext(path)[1].lower() in text_extensions
+
 def diff_trees(t_from, t_to):
-    """Generate a diff between two trees"""
-    output = b''
+    """Show detailed changes between two trees"""
+    output = []
+    
     for path, o_from, o_to in compare_trees(t_from, t_to):
         if o_from != o_to:
-            output += create_diff(o_from, o_to, path)
-    return output
-
-def create_diff(o_from, o_to, path='blob'):
-    """Create a diff between two blobs without using external diff command"""
-    def get_content(oid):
-        if not oid:
-            return []
-        try:
-            # Try to decode as text
-            return data.get_object(oid).decode().splitlines()
-        except UnicodeDecodeError:
-            # If binary file, just return a message
-            return ["Binary file"]
-
-    # Get content of both versions
-    from_lines = get_content(o_from)
-    to_lines = get_content(o_to)
-
-    # Create diff header
-    output = []
-    output.append(f'diff --git a/{path} b/{path}'.encode())
+            # Add file header
+            output.append(f"\nFile: {path}")
+            output.append("=" * (len(path) + 6))
+            
+            # Skip binary files
+            if not is_text_file(path):
+                output.append("Binary file")
+                continue
+                
+            # Get file contents
+            old_content = data.get_object(o_from).decode('utf-8', errors='replace') if o_from else ""
+            new_content = data.get_object(o_to).decode('utf-8', errors='replace') if o_to else ""
+            
+            # Show changes
+            if not o_from:
+                output.append("New file added:")
+                output.append("+++ New content")
+                output.extend("+ " + line for line in new_content.splitlines())
+            elif not o_to:
+                output.append("File deleted:")
+                output.append("--- Previous content")
+                output.extend("- " + line for line in old_content.splitlines())
+            else:
+                output.append("File modified:")
+                old_lines = old_content.splitlines()
+                new_lines = new_content.splitlines()
+                
+                # Show side-by-side diff
+                max_lines = max(len(old_lines), len(new_lines))
+                output.append("-" * 40 + "|" + "-" * 40)
+                output.append("Previous Content".ljust(40) + "|" + "New Content".ljust(40))
+                output.append("-" * 40 + "|" + "-" * 40)
+                
+                for i in range(max_lines):
+                    old_line = old_lines[i] if i < len(old_lines) else ""
+                    new_line = new_lines[i] if i < len(new_lines) else ""
+                    if old_line != new_line:
+                        output.append(f"{old_line:<40}|{new_line:<40}  <")
+                    else:
+                        output.append(f"{old_line:<40}|{new_line:<40}")
+                
+                output.append("-" * 40 + "|" + "-" * 40)
+            
+            output.append("\n")
     
-    # If either file is binary, just show a message
-    if from_lines == ["Binary file"] or to_lines == ["Binary file"]:
-        output.append(b"Binary files differ")
-        return b'\n'.join(output) + b'\n'
-
-    if not o_from:
-        output.append(f'--- /dev/null'.encode())
-    else:
-        output.append(f'--- a/{path}'.encode())
-    
-    if not o_to:
-        output.append(f'+++ /dev/null'.encode())
-    else:
-        output.append(f'+++ b/{path}'.encode())
-
-    # Simple diff implementation
-    from_idx = 0
-    to_idx = 0
-    
-    while from_idx < len(from_lines) or to_idx < len(to_lines):
-        if from_idx >= len(from_lines):
-            # Rest of the lines are additions
-            output.append(f'+{to_lines[to_idx]}'.encode())
-            to_idx += 1
-        elif to_idx >= len(to_lines):
-            # Rest of the lines are deletions
-            output.append(f'-{from_lines[from_idx]}'.encode())
-            from_idx += 1
-        elif from_lines[from_idx] == to_lines[to_idx]:
-            # Lines are the same
-            output.append(f' {from_lines[from_idx]}'.encode())
-            from_idx += 1
-            to_idx += 1
-        else:
-            # Lines are different
-            output.append(f'-{from_lines[from_idx]}'.encode())
-            output.append(f'+{to_lines[to_idx]}'.encode())
-            from_idx += 1
-            to_idx += 1
-
-    return b'\n'.join(output) + b'\n'
+    return "\n".join(output).encode()
 
 def merge_trees(t_base, t_HEAD, t_other):
     """Merge three trees and return the merged tree"""
