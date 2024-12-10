@@ -15,6 +15,7 @@ def create_parser():
     _add_branch_commands(commands_parser)
     _add_remote_commands(commands_parser)
     _add_plumbing_commands(commands_parser)
+    _add_visualization_commands(commands_parser)
     return parser
 
 def _add_basic_commands(commands_parser):
@@ -85,6 +86,12 @@ def _add_remote_commands(commands_parser):
     push_parser.add_argument('remote', help='Remote repository path')
     push_parser.add_argument('branch', help='Branch to push')
 
+    # Merge remote
+    merge_remote_parser = commands_parser.add_parser('merge-remote', 
+                                                   help='Merge remote branch')
+    merge_remote_parser.set_defaults(func=commands.merge_remote)
+    merge_remote_parser.add_argument('branch', help='Remote branch to merge')
+
 def _add_plumbing_commands(commands_parser):
     """Add low-level plumbing commands like hash-object and cat-file."""
     # Hash-object
@@ -98,6 +105,7 @@ def _add_plumbing_commands(commands_parser):
     cat_file_parser.add_argument('object', type=base.get_oid, help='Object to display')
 
 def _add_visualization_commands(commands_parser):
+    """Add visualization commands like commit graph."""
     # Visualize commit graph
     k_parser = commands_parser.add_parser('k', help='Visualize commit graph')
     k_parser.set_defaults(func=commands.k) 

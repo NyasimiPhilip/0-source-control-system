@@ -68,20 +68,38 @@ def update_ref (ref, value, deref=True):
 
 
 def get_ref (ref, deref=True):
-    """Get the value of a reference."""
+    """
+    Get the value of a reference.
+    
+    Args:
+        ref: Reference name to get
+        deref: Whether to dereference symbolic refs
+        
+    Returns:
+        RefValue: Named tuple containing ref value and symbolic flag
+    """
     ref_path = f'{GIT_DIR}/{ref}'
     value = None
-    if os.path.isfile (ref_path):
-        with open (ref_path) as f:
-            value = f.read ().strip ()
+    
+    # Get ref value if file exists
+    if os.path.isfile(ref_path):
+        with open(ref_path) as f:
+            value = f.read().strip()
 
-    symbolic = bool (value) and value.startswith ('ref:')
+    # Handle symbolic refs
+    symbolic = bool(value) and value.startswith('ref:')
     if symbolic:
-        value = value.split (':', 1)[1].strip ()
+        value = value.split(':', 1)[1].strip()
         if deref:
-            return get_ref (value, deref=True)
+            # Prevent infinite recursion by checking if we're dereferencing the same ref
+            if value == ref:
+                return RefValue(symbolic=False, value=None)
+            try:
+                return get_ref(value, deref=True)
+            except RecursionError:
+                return RefValue(symbolic=False, value=None)
 
-    return RefValue (symbolic=symbolic, value=value)
+    return RefValue(symbolic=symbolic, value=value)
 
 def delete_ref (ref, deref=True):
     ref = _get_ref_internal (ref, deref)[0]
@@ -194,4 +212,20 @@ def push_object (oid, remote_path):
     dst = f'{remote_git_dir}/objects/{oid}'
     
     shutil.copy(src, dst)
+
+def init():
+    """Initialize repository data structures."""
+    if not os.path.exists(GIT_DIR):
+        os.makedirs(GIT_DIR)
+        os.makedirs(f'{GIT_DIR}/objects', exist_ok=True)
+        os.makedirs(f'{GIT_DIR}/refs/heads', exist_ok=True)
+        os.makedirs(f'{GIT_DIR}/refs/tags', exist_ok=True)
+        
+        # Initialize HEAD to point to master branch
+        with open(f'{GIT_DIR}/HEAD', 'w') as f:
+            f.write('ref: refs/heads/master\n')
+
+        # Create empty index
+        with open(f'{GIT_DIR}/index', 'w') as f:
+            json.dump({}, f)
 

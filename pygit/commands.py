@@ -209,6 +209,7 @@ def merge_base(args):
 def fetch(args):
     """Download objects and refs from remote repository."""
     remote.fetch(args.remote)
+    print("Fetch complete. Use 'pygit merge origin/<branch>' to integrate changes.")
 
 def push(args):
     """Update remote refs and objects."""
@@ -221,6 +222,19 @@ def add(args):
 def clone(args):
     """Clone a repository into a new directory."""
     remote.clone(args.remote, args.target)
+
+def merge_remote(args):
+    """Merge remote branch into current branch."""
+    remote_branch = args.branch
+    if not remote_branch.startswith('origin/'):
+        remote_branch = f'origin/{remote_branch}'
+    
+    remote_ref = data.get_ref(f'refs/remotes/{remote_branch}').value
+    if not remote_ref:
+        print(f"No such remote branch: {args.branch}")
+        return
+        
+    base.merge(remote_ref)
 
 def _print_commit(oid, commit, refs=None):
     """Helper function to print commit information."""
