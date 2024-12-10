@@ -1,3 +1,11 @@
+"""Core data storage operations for PyGit.
+
+This module handles all low-level data storage operations including:
+- Object storage (blobs, trees, commits)
+- Reference management (branches, tags)
+- Index (staging area) operations
+"""
+
 import os
 import shutil
 import hashlib
@@ -6,28 +14,45 @@ import json
 from collections import namedtuple
 from contextlib import contextmanager
 
+# Named tuple for reference values
+RefValue = namedtuple('RefValue', ['symbolic', 'value'])
 
 # Will be initialized in cli.main()
 GIT_DIR = None
 
-
 @contextmanager
-def change_git_dir (new_dir):
+def change_git_dir(new_dir):
+    """
+    Temporarily change GIT_DIR for context operations.
+    
+    Args:
+        new_dir: New directory path for GIT_DIR
+    """
     global GIT_DIR
     old_dir = GIT_DIR
     GIT_DIR = f'{new_dir}/.pygit'
     yield
     GIT_DIR = old_dir
 
-def init():
-    if not os.path.exists(GIT_DIR):
-        os.makedirs(GIT_DIR)
-        os.makedirs (f'{GIT_DIR}/objects', exist_ok=True)
-
-RefValue = namedtuple ('RefValue', ['symbolic', 'value'])
-
+def hash_object(data, type_='blob'):
+    """
+    Compute hash of object and store it.
+    
+    Args:
+        data: Content to hash and store
+        type_: Object type ('blob', 'tree', 'commit')
+        
+    Returns:
+        str: Object ID (SHA-1 hash)
+    """
+    obj = type_.encode() + b'\x00' + data
+    oid = hashlib.sha1(obj).hexdigest()
+    with open(f'{GIT_DIR}/objects/{oid}', 'wb') as out:
+        out.write(obj)
+    return oid
 
 def update_ref (ref, value, deref=True):
+    """Update a reference to point to a specific value."""
     ref = _get_ref_internal (ref, deref)[0]
 
     assert value.value
@@ -43,7 +68,7 @@ def update_ref (ref, value, deref=True):
 
 
 def get_ref (ref, deref=True):
-    """Get the value of a ref"""
+    """Get the value of a reference."""
     ref_path = f'{GIT_DIR}/{ref}'
     value = None
     if os.path.isfile (ref_path):

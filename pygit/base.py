@@ -8,6 +8,7 @@ from . import diff
 from . import data
 
 def init ():
+    """Initialize a new PyGit repository with required directories and HEAD reference."""
     print("Creating .pygit directory...")  # Debug print
     if not os.path.exists(data.GIT_DIR):
         os.makedirs(data.GIT_DIR)
@@ -17,6 +18,7 @@ def init ():
 
 
 def write_tree ():
+    """Create a tree object from current index and return its OID."""
     # Index is flat, we need it as a tree of dicts
     index_as_tree = {}
     with data.get_index () as index:
@@ -49,6 +51,15 @@ def write_tree ():
     return write_tree_recursive (index_as_tree)
 
 def _iter_tree_entries (oid):
+    """
+    Iterate through entries in a tree object.
+    
+    Args:
+        oid: Object ID of tree
+        
+    Yields:
+        tuple: (type, oid, name) for each entry
+    """
     if not oid:
         return
     tree = data.get_object (oid, 'tree')
@@ -58,6 +69,16 @@ def _iter_tree_entries (oid):
 
 
 def get_tree (oid, base_path=''):
+    """
+    Get dictionary of paths and OIDs for a given tree object.
+    
+    Args:
+        oid: Object ID of the tree
+        base_path: Base path prefix for tree entries
+    
+    Returns:
+        dict: Mapping of paths to OIDs
+    """
     result = {}
     for type_, oid, name in _iter_tree_entries (oid):
         assert '/' not in name
@@ -72,6 +93,7 @@ def get_tree (oid, base_path=''):
     return result
 
 def get_working_tree ():
+    """Get dictionary of paths and OIDs for current working directory."""
     result = {}
     for root, _, filenames in os.walk ('.'):
         for filename in filenames:
@@ -83,11 +105,13 @@ def get_working_tree ():
     return result
 
 def get_index_tree ():
+    """Get dictionary of paths and OIDs from current index."""
     with data.get_index () as index:
         return index
 
 
 def _empty_current_directory ():
+    """Remove all tracked files from working directory."""
     for root, dirnames, filenames in os.walk ('.', topdown=False):
         for filename in filenames:
             path = os.path.relpath (f'{root}/{filename}')
@@ -101,8 +125,6 @@ def _empty_current_directory ():
             try:
                 os.rmdir (path)
             except (FileNotFoundError, OSError):
-                # Deletion might fail if the directory contains ignored files,
-                # so it's OK
                 pass
 
 def read_tree (tree_oid, update_working=False):
@@ -127,6 +149,15 @@ def read_tree (tree_oid, update_working=False):
 
 
 def read_tree_merged (t_base, t_HEAD, t_other, update_working=False):
+    """
+    Read merged tree into index and optionally update working directory.
+    
+    Args:
+        t_base: Base tree OID
+        t_HEAD: HEAD tree OID
+        t_other: Other tree OID
+        update_working: Whether to update working directory
+    """
     with data.get_index () as index:
         index.clear ()
         index.update (diff.merge_trees (
@@ -139,6 +170,12 @@ def read_tree_merged (t_base, t_HEAD, t_other, update_working=False):
             _checkout_index (index)
 
 def _checkout_index (index):
+    """
+    Update working directory to match index.
+    
+    Args:
+        index: Dictionary mapping paths to OIDs
+    """
     _empty_current_directory ()
     for path, oid in index.items ():
         os.makedirs (os.path.dirname (f'./{path}'), exist_ok=True)
@@ -146,6 +183,15 @@ def _checkout_index (index):
             f.write (data.get_object (oid, 'blob'))
 
 def commit (message):
+    """
+    Create a new commit with the current index state.
+    
+    Args:
+        message: Commit message
+    
+    Returns:
+        str: OID of new commit
+    """
     commit = f'tree {write_tree ()}\n'
 
     HEAD = data.get_ref ('HEAD').value
@@ -167,6 +213,12 @@ def commit (message):
 
 
 def checkout (name):
+    """
+    Switch to specified branch or commit.
+    
+    Args:
+        name: Branch name or commit OID to checkout
+    """
     oid = get_oid (name)
     commit = get_commit (oid)
     read_tree (commit.tree, update_working= True)
@@ -179,9 +231,21 @@ def checkout (name):
     data.update_ref ('HEAD', HEAD, deref=False)
 
 def reset (oid):
+    """
+    Reset HEAD to specified commit.
+    
+    Args:
+        oid: Object ID to reset to
+    """
     data.update_ref ('HEAD', data.RefValue (symbolic=False, value=oid))
 
 def merge (other):
+    """
+    Merge specified commit into current branch.
+    
+    Args:
+        other: OID of commit to merge
+    """
     HEAD = data.get_ref ('HEAD').value
     assert HEAD
     merge_base = get_merge_base (other, HEAD)
@@ -205,6 +269,16 @@ def merge (other):
 
 
 def get_merge_base (oid1, oid2):
+    """
+    Find most recent common ancestor of two commits.
+    
+    Args:
+        oid1: First commit OID
+        oid2: Second commit OID
+        
+    Returns:
+        str: OID of merge base commit
+    """
     parents1 = set (iter_commits_and_parents ({oid1}))
 
     for oid in iter_commits_and_parents ({oid2}):
@@ -212,13 +286,37 @@ def get_merge_base (oid1, oid2):
             return oid
 
 def is_ancestor_of (commit, maybe_ancestor):
+    """
+    Check if one commit is ancestor of another.
+    
+    Args:
+        commit: Potential descendant commit OID
+        maybe_ancestor: Potential ancestor commit OID
+        
+    Returns:
+        bool: True if maybe_ancestor is ancestor of commit
+    """
     return maybe_ancestor in iter_commits_and_parents ({commit})
 
 def create_tag (name, oid):
+    """
+    Create a tag reference pointing to specified commit.
+    
+    Args:
+        name: Tag name
+        oid: Object ID to tag
+    """
     data.update_ref (f'refs/tags/{name}', data.RefValue (symbolic=False, value=oid))
 
 
 def create_branch (name, oid):
+    """
+    Create a new branch pointing to specified commit.
+    
+    Args:
+        name: Branch name
+        oid: Object ID for branch to point to
+    """
     ref_path = f'refs/heads/{name}'
     data.update_ref(ref_path, data.RefValue(symbolic=False, value=oid))
     print(f"Created branch {name} at {ref_path}")  # Debug print
@@ -235,6 +333,15 @@ def iter_branch_names ():
         yield branch_name
 
 def is_branch (branch):
+    """
+    Check if specified name is a valid branch.
+    
+    Args:
+        branch: Branch name to check
+        
+    Returns:
+        bool: True if branch exists
+    """
     return data.get_ref (f'refs/heads/{branch}').value is not None
 
 def get_branch_name ():
@@ -253,8 +360,8 @@ Commit = namedtuple ('Commit', ['tree', 'parents', 'message'])
 
 
 def get_commit (oid):
+    """Get commit object by OID and return Commit namedtuple."""
     parents = []
-
     commit = data.get_object (oid, 'commit').decode ()
     lines = iter (commit.splitlines ())
     for line in itertools.takewhile (operator.truth, lines):
@@ -270,8 +377,15 @@ def get_commit (oid):
     return Commit (tree=tree, parents=parents, message=message)
 
 def iter_commits_and_parents (oids):
-    # N.B. Must yield the oid before acccessing it (to allow caller to fetch it
-    # if needed)
+    """
+    Iterate through commits and their parents.
+    
+    Args:
+        oids: Set of commit OIDs to start from
+        
+    Yields:
+        str: OID of each commit encountered
+    """
     oids = deque (oids)
     visited = set ()
 
@@ -289,9 +403,15 @@ def iter_commits_and_parents (oids):
         oids.extend (commit.parents[1:])
 
 def iter_objects_in_commits (oids):
-    # N.B. Must yield the oid before acccessing it (to allow caller to fetch it
-    # if needed)
-
+    """
+    Iterate through all objects reachable from commits.
+    
+    Args:
+        oids: Set of commit OIDs to start from
+        
+    Yields:
+        str: OID of each object encountered
+    """
     visited = set ()
     def iter_objects_in_tree (oid):
         visited.add (oid)

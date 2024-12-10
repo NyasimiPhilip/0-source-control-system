@@ -1,3 +1,5 @@
+"""Remote repository operations for PyGit."""
+
 import os
 import shutil
 from . import data
@@ -8,7 +10,7 @@ REMOTE_REFS_BASE = 'refs/heads/'
 LOCAL_REFS_BASE = 'refs/remote/'
 
 def fetch (remote_path):
-    # Get refs from server
+    """Fetch objects and refs from remote repository."""
     refs = _get_remote_refs (remote_path)
     
     # Ensure objects directory exists
@@ -24,6 +26,7 @@ def fetch (remote_path):
 
 
 def push (remote_path, refname):
+    """Push current branch to remote repository."""
     # Get refs and objects that need to be pushed
     remote_refs = _get_remote_refs (remote_path)
     remote_ref = remote_refs.get (refname)

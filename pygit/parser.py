@@ -1,24 +1,24 @@
+"""Command-line argument parsing for PyGit."""
+
 import argparse
 from . import base
 from . import commands
 
 def create_parser():
+    """Create and return the command-line argument parser."""
     parser = argparse.ArgumentParser(
-        description='pygit: A lightweight implementation of Git in Python'
+        description='PyGit: A lightweight implementation of Git in Python'
     )
-
     commands_parser = parser.add_subparsers(dest='command', help='Available commands')
     commands_parser.required = True
-
     _add_basic_commands(commands_parser)
     _add_branch_commands(commands_parser)
     _add_remote_commands(commands_parser)
     _add_plumbing_commands(commands_parser)
-    _add_visualization_commands(commands_parser)
-
     return parser
 
 def _add_basic_commands(commands_parser):
+    """Add basic Git commands like init, add, commit, status, and log."""
     # Init
     init_parser = commands_parser.add_parser('init', help='Initialize a new repository')
     init_parser.set_defaults(func=commands.init)
@@ -49,6 +49,7 @@ def _add_basic_commands(commands_parser):
     log_parser.add_argument('oid', default='@', type=base.get_oid, nargs='?')
 
 def _add_branch_commands(commands_parser):
+    """Add branch-related commands like branch, checkout, and merge."""
     # Branch
     branch_parser = commands_parser.add_parser('branch', help='List or create branches')
     branch_parser.set_defaults(func=commands.branch)
@@ -66,6 +67,7 @@ def _add_branch_commands(commands_parser):
     merge_parser.add_argument('commit', type=base.get_oid, help='Commit to merge')
 
 def _add_remote_commands(commands_parser):
+    """Add remote operation commands like clone, fetch, and push."""
     # Clone
     clone_parser = commands_parser.add_parser('clone', help='Clone a repository')
     clone_parser.set_defaults(func=commands.clone)
@@ -84,6 +86,7 @@ def _add_remote_commands(commands_parser):
     push_parser.add_argument('branch', help='Branch to push')
 
 def _add_plumbing_commands(commands_parser):
+    """Add low-level plumbing commands like hash-object and cat-file."""
     # Hash-object
     hash_object_parser = commands_parser.add_parser('hash-object', help='Compute object hash')
     hash_object_parser.set_defaults(func=commands.hash_object)

@@ -1,15 +1,31 @@
-# PyGit
+# PyGit: A Python Implementation of Git
 
-PyGit is a lightweight implementation of Git's core functionality in Python, designed to help understand Git's internal workings.
+PyGit is a lightweight implementation of Git's core functionality in Python, designed to help understand Git's internal workings. This project implements the fundamental concepts of version control including commits, branches, merging, and remote operations.
 
 ## Features
 
-PyGit provides a comprehensive set of Git-like commands with core version control functionality:
+- **Basic Version Control**
+  - Initialize repositories (`init`)
+  - Stage changes (`add`)
+  - Create commits (`commit`)
+  - View status (`status`)
+  - View history (`log`)
 
-- Basic Commands: `init`, `add`, `commit`, `status`, `log`, `checkout`, `clone`
-- Branch Operations: Create, list, and switch branches
-- Remote Operations: `fetch`, `push`
-- Low-level Commands: `hash-object`, `cat-file`, `write-tree`, `read-tree`
+- **Branch Management**
+  - Create branches (`branch`)
+  - Switch branches (`checkout`)
+  - Merge branches (`merge`)
+  - View branch structure (`k`)
+
+- **Remote Operations**
+  - Clone repositories (`clone`)
+  - Fetch changes (`fetch`)
+  - Push changes (`push`)
+
+- **Low-level Operations**
+  - Hash objects (`hash-object`)
+  - View object contents (`cat-file`)
+  - Manipulate trees (`write-tree`, `read-tree`)
 
 ## Requirements
 
@@ -29,7 +45,7 @@ PyGit provides a comprehensive set of Git-like commands with core version contro
    cd pygit
    ```
 
-3. Install the package in editable mode:
+2. Install in development mode:
    ```bash
    pip install -e .
    ```
@@ -54,29 +70,29 @@ pygit init
 
 # Create and add files
 echo "Hello, PyGit!" > hello.txt
-pygit add hello.txt
+pygit add hello.txt or pygit add .
 pygit commit -m "Initial commit"
 
-# Check status and history
+# View status and history
 pygit status
 pygit log
 ```
 
-### Branching and Merging
+### Branch Operations
 
 ```bash
-# Create and switch to a new branch
-pygit branch feature-branch
-pygit checkout feature-branch
+# Create and switch branches
+pygit branch feature
+pygit checkout feature
 
-# Make changes and commit
+# Make changes
 echo "New feature" > feature.txt
 pygit add feature.txt
-pygit commit -m "Add new feature"
+pygit commit -m "Add feature"
 
-# Merge back to master
+# Merge changes
 pygit checkout master
-pygit merge feature-branch
+pygit merge feature
 ```
 
 ### Remote Operations
@@ -94,33 +110,29 @@ pygit push /path/to/remote master
 
 ```
 pygit/
-├── .pygit/           # Repository metadata
-│   ├── objects/     # Object storage
-│   └── refs/        # References (branches, tags)
-├── pygit/            # Python source code
-│   ├── base.py
-│   ├── cli.py
-│   ├── data.py
-│   ├── diff.py
-│   └── remote.py
-├── tests/           # Python test suite
-│   ├── test_base.py
-│   ├── test_data.py
-│   └── test_remote.py
-└── README.md
+├── __init__.py
+├── base.py      # Core VCS functionality
+├── cli.py       # Command-line interface
+├── commands.py  # Command implementations
+├── data.py      # Data storage operations
+├── diff.py      # Diff and merge logic
+├── parser.py    # Command parsing
+└── remote.py    # Remote operations
 ```
 
-## Running Tests
+## Implementation Details
 
-```bash
-# Navigate to tests directory
-cd tests
+### Object Storage
+- Objects are stored in `.pygit/objects/` using SHA-1 hashes
+- Supports blobs (files), trees (directories), and commits
 
-# Run test suite
-python -m unittest discover
-```
+### Index Management
+- Staging area implemented in `.pygit/index`
+- JSON format for simplicity
 
-## Comparison with Conventional Git
+### Branch Management
+- Branches stored in `.pygit/refs/heads/`
+- HEAD reference tracks current branch
 
 ### Similarities
 

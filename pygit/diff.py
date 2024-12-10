@@ -1,8 +1,11 @@
+"""Diff and merge operations for PyGit."""
+
 from collections import defaultdict
 import os
 from . import data
 
 def compare_trees(*trees):
+    """Compare multiple trees and yield their differences."""
     entries = defaultdict(lambda: [None] * len(trees))
     for i, tree in enumerate(trees):
         for path, oid in tree.items():
@@ -12,7 +15,7 @@ def compare_trees(*trees):
         yield (path, *oids)
 
 def iter_changed_files(t_from, t_to):
-    """Iterate through changed files between two trees"""
+    """Iterate through changed files between two trees."""
     for path, o_from, o_to in compare_trees(t_from, t_to):
         if o_from != o_to:
             action = ('new file' if not o_from else
@@ -31,7 +34,7 @@ def is_text_file(path):
     return os.path.splitext(path)[1].lower() in text_extensions
 
 def diff_trees(t_from, t_to):
-    """Show detailed changes between two trees"""
+    """Generate readable diff between two trees."""
     output = []
     
     for path, o_from, o_to in compare_trees(t_from, t_to):
