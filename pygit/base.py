@@ -14,7 +14,6 @@ def init ():
         os.makedirs(f'{data.GIT_DIR}/objects', exist_ok=True)
     print("Setting up HEAD reference...")  # Debug print
     data.update_ref ('HEAD', data.RefValue (symbolic=True, value='refs/heads/master'))
-    print("Init complete")  # Debug print
 
 
 def write_tree ():

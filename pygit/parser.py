@@ -10,48 +10,79 @@ def create_parser():
     commands_parser = parser.add_subparsers(dest='command', help='Available commands')
     commands_parser.required = True
 
-    # Basic commands
     _add_basic_commands(commands_parser)
-    
-    # Branch and merge commands
     _add_branch_commands(commands_parser)
-    
-    # Remote commands
     _add_remote_commands(commands_parser)
+    _add_plumbing_commands(commands_parser)
 
     return parser
 
-def _add_basic_commands(commands):
+def _add_basic_commands(commands_parser):
     # Init
-    init_parser = commands.add_parser('init', help='Initialize a new repository')
+    init_parser = commands_parser.add_parser('init', help='Initialize a new repository')
     init_parser.set_defaults(func=commands.init)
 
     # Add
-    add_parser = commands.add_parser('add', help='Add file contents to the index')
+    add_parser = commands_parser.add_parser('add', help='Add file contents to the index')
     add_parser.set_defaults(func=commands.add)
     add_parser.add_argument('files', nargs='+', help='Files to add')
 
     # Commit
-    commit_parser = commands.add_parser('commit', help='Create a new commit')
+    commit_parser = commands_parser.add_parser('commit', help='Create a new commit')
     commit_parser.set_defaults(func=commands.commit)
     commit_parser.add_argument('-m', '--message', required=True, help='Commit message')
 
-    # ... other basic commands ...
+    # Status
+    status_parser = commands_parser.add_parser('status', help='Show working tree status')
+    status_parser.set_defaults(func=commands.status)
 
-def _add_branch_commands(commands):
+    # Log
+    log_parser = commands_parser.add_parser('log', help='Show commit history')
+    log_parser.set_defaults(func=commands.log)
+    log_parser.add_argument('oid', default='@', type=base.get_oid, nargs='?')
+
+def _add_branch_commands(commands_parser):
     # Branch
-    branch_parser = commands.add_parser('branch', help='List or create branches')
+    branch_parser = commands_parser.add_parser('branch', help='List or create branches')
     branch_parser.set_defaults(func=commands.branch)
     branch_parser.add_argument('name', nargs='?', help='Branch name')
     branch_parser.add_argument('start_point', default='@', type=base.get_oid, nargs='?')
 
-    # ... other branch commands ...
+    # Checkout
+    checkout_parser = commands_parser.add_parser('checkout', help='Switch branches or restore files')
+    checkout_parser.set_defaults(func=commands.checkout)
+    checkout_parser.add_argument('commit', help='Commit or branch to checkout')
 
-def _add_remote_commands(commands):
+    # Merge
+    merge_parser = commands_parser.add_parser('merge', help='Join two development histories')
+    merge_parser.set_defaults(func=commands.merge)
+    merge_parser.add_argument('commit', type=base.get_oid, help='Commit to merge')
+
+def _add_remote_commands(commands_parser):
     # Clone
-    clone_parser = commands.add_parser('clone', help='Clone a repository')
+    clone_parser = commands_parser.add_parser('clone', help='Clone a repository')
     clone_parser.set_defaults(func=commands.clone)
     clone_parser.add_argument('remote', help='Remote repository to clone')
     clone_parser.add_argument('target', help='Target directory')
 
-    # ... other remote commands ... 
+    # Fetch
+    fetch_parser = commands_parser.add_parser('fetch', help='Download objects from remote')
+    fetch_parser.set_defaults(func=commands.fetch)
+    fetch_parser.add_argument('remote', help='Remote to fetch from')
+
+    # Push
+    push_parser = commands_parser.add_parser('push', help='Update remote refs and objects')
+    push_parser.set_defaults(func=commands.push)
+    push_parser.add_argument('remote', help='Remote to push to')
+    push_parser.add_argument('branch', help='Branch to push')
+
+def _add_plumbing_commands(commands_parser):
+    # Hash-object
+    hash_object_parser = commands_parser.add_parser('hash-object', help='Compute object hash')
+    hash_object_parser.set_defaults(func=commands.hash_object)
+    hash_object_parser.add_argument('file', help='File to hash')
+
+    # Cat-file
+    cat_file_parser = commands_parser.add_parser('cat-file', help='Display object contents')
+    cat_file_parser.set_defaults(func=commands.cat_file)
+    cat_file_parser.add_argument('object', type=base.get_oid, help='Object to display') 
