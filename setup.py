@@ -1,16 +1,16 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='ugit',
+    name='pygit',
     version='1.0.0',
     description='A lightweight implementation of Git in Python',
     author='Nyasimi Philip',
     author_email='nyasimiphilip@gmail.com',
-    url='https://github.com/yourusername/ugit',
+    url='https://github.com/yourusername/pygit',
     packages=find_packages(),
     entry_points={
         'console_scripts': [
-            'ugit=ugit.cli:main',
+            'pygit=pygit.cli:main',
         ],
     },
     install_requires=[

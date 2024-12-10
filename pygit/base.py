@@ -8,7 +8,7 @@ from . import diff
 from . import data
 
 def init ():
-    print("Creating .ugit directory...")  # Debug print
+    print("Creating .pygit directory...")  # Debug print
     if not os.path.exists(data.GIT_DIR):
         os.makedirs(data.GIT_DIR)
         os.makedirs(f'{data.GIT_DIR}/objects', exist_ok=True)
@@ -337,4 +337,4 @@ def add (filenames):
 
 
 def is_ignored (path):
-    return '.ugit' in path.split ('/')
+    return '.pygit' in path.split ('/')

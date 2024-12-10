@@ -15,7 +15,7 @@ GIT_DIR = None
 def change_git_dir (new_dir):
     global GIT_DIR
     old_dir = GIT_DIR
-    GIT_DIR = f'{new_dir}/.ugit'
+    GIT_DIR = f'{new_dir}/.pygit'
     yield
     GIT_DIR = old_dir
 
@@ -117,12 +117,12 @@ def object_exists (oid):
 def fetch_object_if_missing (oid, remote_git_dir):
     if object_exists (oid):
         return
-    remote_git_dir += '/.ugit'
+    remote_git_dir += '/.pygit'
     shutil.copy (f'{remote_git_dir}/objects/{oid}',
                  f'{GIT_DIR}/objects/{oid}')
 
 def push_object (oid, remote_git_dir):
-    remote_git_dir += '/.ugit'
+    remote_git_dir += '/.pygit'
     shutil.copy (f'{GIT_DIR}/objects/{oid}',
                  f'{remote_git_dir}/objects/{oid}')
 

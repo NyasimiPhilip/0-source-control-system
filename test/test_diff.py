@@ -1,7 +1,7 @@
 import os
 import shutil
 import unittest
-from ugit import base, data, diff
+from pygit import base, data, diff
 
 class TestDiff(unittest.TestCase):
     def setUp(self):

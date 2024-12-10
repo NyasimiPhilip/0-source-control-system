@@ -10,10 +10,11 @@ from . import data
 from . import remote
 
 
-def main ():
-    with data.change_git_dir ('.'):
-        args = parse_args ()
-        args.func (args)
+def main():
+    print("ugit CLI started")
+    with data.change_git_dir('.'):
+        args = parse_args()
+        args.func(args)
 
 
 def parse_args():
@@ -277,3 +278,6 @@ def add (args):
 
 def clone(args):
     remote.clone(args.remote, args.target)
+
+if __name__ == '__main__':
+    main()

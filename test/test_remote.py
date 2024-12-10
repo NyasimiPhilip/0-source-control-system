@@ -1,7 +1,7 @@
 import os
 import shutil
 import unittest
-from ugit import base, data, remote
+from pygit import base, data, remote
 
 class TestRemote(unittest.TestCase):
     def setUp(self):
@@ -12,11 +12,11 @@ class TestRemote(unittest.TestCase):
         os.makedirs(self.remote_dir)
 
         os.chdir(self.remote_dir)
-        data.GIT_DIR = os.path.join(self.remote_dir, '.ugit')
+        data.GIT_DIR = os.path.join(self.remote_dir, '.pygit')
         base.init()
 
         os.chdir(self.local_dir)
-        data.GIT_DIR = os.path.join(self.local_dir, '.ugit')
+        data.GIT_DIR = os.path.join(self.local_dir, '.pygit')
         base.init()
 
     def tearDown(self):

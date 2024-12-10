@@ -1,14 +1,14 @@
 import os
 import shutil
 import unittest
-from ugit import base, data
+from pygit import base, data
 
 class TestBase(unittest.TestCase):
     def setUp(self):
         self.test_dir = os.path.join(os.path.dirname(__file__), 'test_repo')
         os.makedirs(self.test_dir, exist_ok=True)
         os.chdir(self.test_dir)
-        data.GIT_DIR = os.path.join(self.test_dir, '.ugit')
+        data.GIT_DIR = os.path.join(self.test_dir, '.pygit')
         base.init()
 
     def tearDown(self):
