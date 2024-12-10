@@ -11,20 +11,30 @@ PyGit provides a comprehensive set of Git-like commands with core version contro
 - Remote Operations: `fetch`, `push`
 - Low-level Commands: `hash-object`, `cat-file`, `write-tree`, `read-tree`
 
+## Requirements
+
+1. Python 3.6 or higher
+2. Graphviz (for visualization features)
+   - Windows: Download from https://graphviz.org/download/
+   - Linux: `sudo apt-get install graphviz`
+   - macOS: `brew install graphviz`
+
 ## Installation
 
-1. Clone the repository:
+1. Install Graphviz (see Requirements above)
+
+2. Clone the repository:
    ```bash
    git clone https://github.com/yourusername/pygit.git
    cd pygit
    ```
 
-2. Install the package in editable mode:
+3. Install the package in editable mode:
    ```bash
    pip install -e .
    ```
 
-3. Verify installation:
+4. Verify installation:
    ```bash
    pygit --help
    ```

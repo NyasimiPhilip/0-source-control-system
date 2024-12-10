@@ -214,11 +214,12 @@ def create_branch (name, oid):
 def iter_branch_names ():
     """Iterate through all branch names in the repository"""
     for refname, _ in data.iter_refs('refs/heads/'):
-        # Convert Windows paths to Unix-style
+        # Normalize path separators to forward slashes
         refname = refname.replace('\\', '/')
-        # Get just the branch name from the full ref path
-        branch_name = os.path.relpath(refname, 'refs/heads')
-        print(f"Found branch: {branch_name} from ref: {refname}")  # Debug print
+        if not refname.startswith('refs/heads/'):
+            continue
+        # Extract branch name from refs/heads/branch-name
+        branch_name = refname[len('refs/heads/'):]
         yield branch_name
 
 def is_branch (branch):
@@ -229,10 +230,10 @@ def get_branch_name ():
     HEAD = data.get_ref('HEAD', deref=False)
     if not HEAD.symbolic:
         return None
-    HEAD = HEAD.value
+    HEAD = HEAD.value.replace('\\', '/')  # Normalize path separators
     if not HEAD.startswith('refs/heads/'):
         return None
-    return os.path.relpath(HEAD, 'refs/heads/')
+    return HEAD[len('refs/heads/'):]  # Extract branch name
 
 
 

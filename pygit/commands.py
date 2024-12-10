@@ -88,16 +88,7 @@ def tag(args):
 def branch(args):
     if not args.name:
         current = base.get_branch_name()
-        print(f"Current branch: {current}")
-        
-        # Get all refs for debugging
-        print("\nAll refs:")
-        for refname, ref in data.iter_refs():
-            print(f"  {refname}: {ref}")
-            
-        # Get branches
         branches = list(base.iter_branch_names())
-        print(f"\nFound branches: {branches}")
         
         if not branches:
             print("No branches exist yet")
@@ -111,27 +102,48 @@ def branch(args):
         print(f'Branch {args.name} created at {args.start_point[:10]}')
 
 def k(args):
+    """Visualize the commit graph"""
     dot = 'digraph commits {\n'
     oids = set()
     
+    # Add refs
     for refname, ref in data.iter_refs(deref=False):
         dot += f'"{refname}" [shape=note]\n'
         dot += f'"{refname}" -> "{ref.value}"\n'
         if not ref.symbolic:
             oids.add(ref.value)
 
+    # Add commits
     for oid in base.iter_commits_and_parents(oids):
         commit = base.get_commit(oid)
         dot += f'"{oid}" [shape=box style=filled label="{oid[:10]}"]\n'
         for parent in commit.parents:
             dot += f'"{oid}" -> "{parent}"\n'
     dot += '}'
+    
+    # Print DOT format
+    print("\nCommit Graph (in DOT format):")
     print(dot)
-
-    with subprocess.Popen(
-            ['dot', '-Tgtk', '/dev/stdin'],
-            stdin=subprocess.PIPE) as proc:
-        proc.communicate(dot.encode())
+    
+    try:
+        # Try to visualize using Graphviz
+        output_file = 'pygit-graph.png'
+        with subprocess.Popen(
+                ['dot', 
+                 '-Tpng',
+                 '-o', output_file],
+                stdin=subprocess.PIPE,
+                stderr=subprocess.PIPE) as proc:
+            stdout, stderr = proc.communicate(dot.encode())
+            if proc.returncode == 0:
+                print(f"\nGraph has been saved to '{output_file}'")
+            else:
+                print("\nError creating visualization:", stderr.decode())
+    except FileNotFoundError:
+        print("\nGraphviz is not installed. To visualize the graph:")
+        print("1. Install Graphviz from https://graphviz.org/download/")
+        print("2. Add it to your system PATH")
+        print("3. Run this command again")
 
 def status(args):
     HEAD = base.get_oid('@')

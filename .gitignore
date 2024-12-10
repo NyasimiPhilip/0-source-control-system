@@ -2,4 +2,4 @@ __pycache__
 *.egg-info/
 /.venv/
 .pygit/
-test-repo/
+test-repo

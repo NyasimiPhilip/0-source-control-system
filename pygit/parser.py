@@ -33,6 +33,12 @@ def _add_basic_commands(commands_parser):
     commit_parser.set_defaults(func=commands.commit)
     commit_parser.add_argument('-m', '--message', required=True, help='Commit message')
 
+    # Add diff command
+    diff_parser = commands_parser.add_parser('diff', help='Show changes between commits')
+    diff_parser.set_defaults(func=commands.diff)
+    diff_parser.add_argument('--cached', action='store_true', help='Show staged changes')
+    diff_parser.add_argument('commit', nargs='?', help='Commit to diff against')
+
     # Status
     status_parser = commands_parser.add_parser('status', help='Show working tree status')
     status_parser.set_defaults(func=commands.status)

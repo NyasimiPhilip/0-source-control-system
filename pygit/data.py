@@ -100,14 +100,13 @@ def iter_refs (prefix='', deref=True):
 
     # Yield each ref that matches the prefix
     for refname in refs:
+        # Normalize path separators
+        refname = refname.replace('\\', '/')
         if not refname.startswith(prefix):
             continue
         ref = get_ref(refname, deref=deref)
         if ref.value:
             yield refname, ref
-            
-    # Debug print
-    print(f"Found refs: {refs}")
 
 @contextmanager
 def get_index ():
