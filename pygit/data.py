@@ -43,7 +43,20 @@ def update_ref (ref, value, deref=True):
 
 
 def get_ref (ref, deref=True):
-    return _get_ref_internal (ref, deref)[1]
+    """Get the value of a ref"""
+    ref_path = f'{GIT_DIR}/{ref}'
+    value = None
+    if os.path.isfile (ref_path):
+        with open (ref_path) as f:
+            value = f.read ().strip ()
+
+    symbolic = bool (value) and value.startswith ('ref:')
+    if symbolic:
+        value = value.split (':', 1)[1].strip ()
+        if deref:
+            return get_ref (value, deref=True)
+
+    return RefValue (symbolic=symbolic, value=value)
 
 def delete_ref (ref, deref=True):
     ref = _get_ref_internal (ref, deref)[0]
@@ -66,17 +79,35 @@ def _get_ref_internal (ref, deref):
 
 
 def iter_refs (prefix='', deref=True):
-    refs = ['HEAD', 'MERGE_HEAD']
-    for root, _, filenames in os.walk (f'{GIT_DIR}/refs/'):
-        root = os.path.relpath (root, GIT_DIR)
-        refs.extend (f'{root}/{name}' for name in filenames)
+    """Iterate through all refs in the repository"""
+    # First, check if refs directory exists
+    refs_dir = f'{GIT_DIR}/refs'
+    if not os.path.exists(refs_dir):
+        return
 
+    # Start with HEAD and MERGE_HEAD
+    refs = ['HEAD', 'MERGE_HEAD']
+    
+    # Walk through all files in refs directory
+    for root, _, filenames in os.walk(refs_dir):
+        # Convert Windows paths to Unix-style for consistency
+        root = root.replace('\\', '/')
+        # Get relative path from GIT_DIR
+        root = os.path.relpath(root, GIT_DIR)
+        # Add each ref file found
+        for name in filenames:
+            refs.append(f'{root}/{name}')
+
+    # Yield each ref that matches the prefix
     for refname in refs:
-        if not refname.startswith (prefix):
+        if not refname.startswith(prefix):
             continue
-        ref = get_ref (refname, deref=deref)
+        ref = get_ref(refname, deref=deref)
         if ref.value:
             yield refname, ref
+            
+    # Debug print
+    print(f"Found refs: {refs}")
 
 @contextmanager
 def get_index ():

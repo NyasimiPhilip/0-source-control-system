@@ -14,6 +14,7 @@ def create_parser():
     _add_branch_commands(commands_parser)
     _add_remote_commands(commands_parser)
     _add_plumbing_commands(commands_parser)
+    _add_visualization_commands(commands_parser)
 
     return parser
 
@@ -85,4 +86,9 @@ def _add_plumbing_commands(commands_parser):
     # Cat-file
     cat_file_parser = commands_parser.add_parser('cat-file', help='Display object contents')
     cat_file_parser.set_defaults(func=commands.cat_file)
-    cat_file_parser.add_argument('object', type=base.get_oid, help='Object to display') 
+    cat_file_parser.add_argument('object', type=base.get_oid, help='Object to display')
+
+def _add_visualization_commands(commands_parser):
+    # Visualize commit graph
+    k_parser = commands_parser.add_parser('k', help='Visualize commit graph')
+    k_parser.set_defaults(func=commands.k) 

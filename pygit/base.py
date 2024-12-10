@@ -207,22 +207,32 @@ def create_tag (name, oid):
 
 
 def create_branch (name, oid):
-    data.update_ref (f'refs/heads/{name}', data.RefValue (symbolic=False, value=oid))
+    ref_path = f'refs/heads/{name}'
+    data.update_ref(ref_path, data.RefValue(symbolic=False, value=oid))
+    print(f"Created branch {name} at {ref_path}")  # Debug print
 
 def iter_branch_names ():
-    for refname, _ in data.iter_refs ('refs/heads/'):
-        yield os.path.relpath (refname, 'refs/heads/')
+    """Iterate through all branch names in the repository"""
+    for refname, _ in data.iter_refs('refs/heads/'):
+        # Convert Windows paths to Unix-style
+        refname = refname.replace('\\', '/')
+        # Get just the branch name from the full ref path
+        branch_name = os.path.relpath(refname, 'refs/heads')
+        print(f"Found branch: {branch_name} from ref: {refname}")  # Debug print
+        yield branch_name
 
 def is_branch (branch):
     return data.get_ref (f'refs/heads/{branch}').value is not None
 
 def get_branch_name ():
-    HEAD = data.get_ref ('HEAD', deref=False)
+    """Get the name of the current branch"""
+    HEAD = data.get_ref('HEAD', deref=False)
     if not HEAD.symbolic:
         return None
     HEAD = HEAD.value
-    assert HEAD.startswith ('refs/heads/')
-    return os.path.relpath (HEAD, 'refs/heads')
+    if not HEAD.startswith('refs/heads/'):
+        return None
+    return os.path.relpath(HEAD, 'refs/heads/')
 
 
 
@@ -336,4 +346,31 @@ def add (filenames):
 
 
 def is_ignored (path):
-    return '.pygit' in path.split ('/')
+    """Check if a path should be ignored"""
+    # Normalize path separators to forward slashes
+    path = path.replace('\\', '/')
+    
+    # List of patterns to ignore
+    ignore_patterns = [
+        '.pygit/',           # Ignore .pygit directory and its contents
+        '__pycache__/',      # Ignore Python cache directories
+        '*.pyc',             # Ignore Python compiled files
+        '*.pyo',             # Ignore Python optimized files
+        '*.pyd',             # Ignore Python DLL files
+    ]
+    
+    # Check if path matches any ignore pattern
+    for pattern in ignore_patterns:
+        if pattern.endswith('/'):
+            # Directory pattern
+            if pattern[:-1] in path.split('/'):
+                return True
+        else:
+            # File pattern (simple wildcard matching)
+            if pattern.startswith('*'):
+                if path.endswith(pattern[1:]):
+                    return True
+            elif pattern == path:
+                return True
+    
+    return False

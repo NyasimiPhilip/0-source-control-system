@@ -4,7 +4,7 @@ import textwrap
 import subprocess
 from . import base
 from . import data
-from . import diff
+from . import diff as diff_module
 from . import remote
 
 def init(args):
@@ -54,7 +54,7 @@ def show(args):
         parent_tree = base.get_commit(commit.parents[0]).tree
 
     _print_commit(args.oid, commit)
-    result = diff.diff_trees(
+    result = diff_module.diff_trees(
         base.get_tree(parent_tree), base.get_tree(commit.tree))
     sys.stdout.flush()
     sys.stdout.buffer.write(result)
@@ -75,7 +75,7 @@ def diff(args):
         if not args.commit:
             tree_from = base.get_index_tree()
 
-    result = diff.diff_trees(tree_from, tree_to)
+    result = diff_module.diff_trees(tree_from, tree_to)
     sys.stdout.flush()
     sys.stdout.buffer.write(result)
 
@@ -88,7 +88,22 @@ def tag(args):
 def branch(args):
     if not args.name:
         current = base.get_branch_name()
-        for branch in base.iter_branch_names():
+        print(f"Current branch: {current}")
+        
+        # Get all refs for debugging
+        print("\nAll refs:")
+        for refname, ref in data.iter_refs():
+            print(f"  {refname}: {ref}")
+            
+        # Get branches
+        branches = list(base.iter_branch_names())
+        print(f"\nFound branches: {branches}")
+        
+        if not branches:
+            print("No branches exist yet")
+            return
+            
+        for branch in branches:
             prefix = '*' if branch == current else ' '
             print(f'{prefix} {branch}')
     else:
@@ -132,13 +147,13 @@ def status(args):
 
     print('\nChanges to be committed:\n')
     HEAD_tree = HEAD and base.get_commit(HEAD).tree
-    for path, action in diff.iter_changed_files(base.get_tree(HEAD_tree),
-                                              base.get_index_tree()):
+    for path, action in diff_module.iter_changed_files(base.get_tree(HEAD_tree),
+                                                     base.get_index_tree()):
         print(f'{action:>12}: {path}')
 
     print('\nChanges not staged for commit:\n')
-    for path, action in diff.iter_changed_files(base.get_index_tree(),
-                                              base.get_working_tree()):
+    for path, action in diff_module.iter_changed_files(base.get_index_tree(),
+                                                     base.get_working_tree()):
         print(f'{action:>12}: {path}')
 
 def reset(args):
