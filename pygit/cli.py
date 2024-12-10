@@ -11,7 +11,7 @@ from . import remote
 
 
 def main():
-    print("ugit CLI started")
+    print("pygit CLI started")
     with data.change_git_dir('.'):
         args = parse_args()
         args.func(args)
@@ -19,7 +19,7 @@ def main():
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='ugit: A lightweight implementation of Git in Python'
+        description='pygit: A lightweight implementation of Git in Python'
     )
 
     commands = parser.add_subparsers(dest='command', help='Available commands')
@@ -119,7 +119,7 @@ def parse_args():
 def init(args):
     print("Starting initialization...")
     base.init()
-    print(f'Initialized empty ugit repository in {os.getcwd()}/{data.GIT_DIR}')
+    print(f'Initialized empty pygit repository in {os.getcwd()}/{data.GIT_DIR}')
     print("Initialization complete")
 
 def hash_object (args):
