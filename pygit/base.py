@@ -479,31 +479,49 @@ def add (filenames):
 
 
 def is_ignored (path):
-    """Check if a path should be ignored"""
+    """
+    Check if a path should be ignored based on .pygitignore rules.
+    
+    Args:
+        path: Path to check
+        
+    Returns:
+        bool: True if path should be ignored
+    """
     # Normalize path separators to forward slashes
     path = path.replace('\\', '/')
     
-    # List of patterns to ignore
-    ignore_patterns = [
-        '.pygit/',           # Ignore .pygit directory and its contents
-        '__pycache__/',      # Ignore Python cache directories
-        '*.pyc',             # Ignore Python compiled files
-        '*.pyo',             # Ignore Python optimized files
-        '*.pyd',             # Ignore Python DLL files
-    ]
+    # Only .pygit directory is always ignored
+    if path.startswith('.pygit/'):
+        return True
     
-    # Check if path matches any ignore pattern
-    for pattern in ignore_patterns:
+    # Read .pygitignore if it exists
+    ignore_patterns = set()
+    if os.path.exists('.pygitignore'):
+        with open('.pygitignore', 'r') as f:
+            for line in f:
+                # Skip empty lines and comments
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    ignore_patterns.add(line)
+    
+    # Helper function to match patterns
+    def matches_pattern(path, pattern):
         if pattern.endswith('/'):
             # Directory pattern
-            if pattern[:-1] in path.split('/'):
-                return True
-        else:
-            # File pattern (simple wildcard matching)
+            return pattern[:-1] in path.split('/')
+        elif '*' in pattern:
+            # Handle wildcards
             if pattern.startswith('*'):
-                if path.endswith(pattern[1:]):
-                    return True
-            elif pattern == path:
-                return True
+                return path.endswith(pattern[1:])
+            elif pattern.endswith('*'):
+                return path.startswith(pattern[:-1])
+            else:
+                prefix, suffix = pattern.split('*', 1)
+                return path.startswith(prefix) and path.endswith(suffix)
+        else:
+            # Exact match
+            return pattern == path
     
-    return False
+    # Check if path matches any pattern
+    return any(matches_pattern(path, pattern) for pattern in ignore_patterns)

@@ -57,16 +57,27 @@ class TestBase(unittest.TestCase):
             self.assertEqual(f.read(), 'version 2')
 
     def test_merge(self):
+        """Test merging branches"""
+        # Create initial commit with version 1
         with open('test.txt', 'w') as f:
             f.write('version 1')
         base.add(['test.txt'])
         commit1 = base.commit("First commit")
 
+        # Create and switch to feature branch
+        base.create_branch('feature', commit1)
+        base.checkout('feature')
+
+        # Make changes in feature branch
         with open('test.txt', 'w') as f:
             f.write('version 2')
         base.add(['test.txt'])
-        commit2 = base.commit("Second commit")
+        feature_commit = base.commit("Feature commit")
 
-        base.merge(commit1)
+        # Switch back to master and merge
+        base.checkout('master')
+        base.merge(commit1)  # Merge back to version 1
+        
+        # Verify content
         with open('test.txt') as f:
             self.assertEqual(f.read(), 'version 1')

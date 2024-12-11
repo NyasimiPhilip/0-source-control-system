@@ -1,6 +1,6 @@
 # PyGit: A Python Implementation of Git
 
-PyGit is a lightweight implementation of Git's core functionality in Python, designed to help understand Git's internal workings. This project implements the fundamental concepts of version control including commits, branches, merging, and remote operations.
+PyGit is a lightweight implementation of Git's core functionality in Python. This project implements the fundamental concepts of version control including commits, branches, merging, and remote operations.
 
 ## Features
 
@@ -191,4 +191,176 @@ PyGit implements only basic merging:
 - Limited conflict handling
 - Requires manual intervention for complex merge scenarios
 - Focuses on demonstrating the fundamental merge concept
+
+## Ignoring Files
+
+PyGit uses `.pygitignore` files to determine which files and directories to ignore. Only the `.pygit/` directory is ignored by default.
+
+### Creating a .pygitignore File
+
+Create a `.pygitignore` file in your repository root:
+```bash
+# Create .pygitignore
+touch .pygitignore
+
+# Add patterns to ignore
+echo "*.log" >> .pygitignore
+echo "node_modules/" >> .pygitignore
+```
+
+### Ignore Patterns
+
+The `.pygitignore` file supports several pattern formats:
+
+1. **Directory patterns** (ending with `/`):
+   ```
+   node_modules/    # Ignores the entire directory
+   build/          # Ignores build directory
+   ```
+
+2. **File patterns with wildcards** (`*`):
+   ```
+   *.log           # Ignores all .log files
+   *.pyc           # Ignores Python compiled files
+   test_*.py       # Ignores test files
+   ```
+
+3. **Exact matches**:
+   ```
+   secret.txt      # Ignores specific file
+   config.json     # Ignores specific file
+   ```
+
+4. **Comments and formatting**:
+   ```
+   # This is a comment
+   
+   # Python files
+   *.pyc
+   __pycache__/
+   
+   # Build directories
+   dist/
+   build/
+   ```
+
+### Example .pygitignore
+
+```
+# Development
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Dependencies
+node_modules/
+venv/
+.venv/
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# Logs and databases
+*.log
+*.sqlite
+
+# IDE specific
+.vscode/
+.idea/
+*.swp
+```
+
+Note: Unlike Git, PyGit only ignores files that are explicitly listed in `.pygitignore` (except for the `.pygit/` directory which is always ignored).
+
+## Testing
+
+PyGit includes a comprehensive test suite covering core functionality. The tests are located in the `test/` directory.
+
+### Test Structure
+```
+test/
+├── __init__.py
+├── run_tests.py          # Test runner script
+├── test_base.py          # Core operations tests
+├── test_branch.py        # Branch operations tests
+├── test_data.py          # Data storage tests
+├── test_diff.py          # Diff functionality tests
+├── test_ignore.py        # Ignore pattern tests
+├── test_remote.py        # Remote operations tests
+└── test_status.py        # Status reporting tests
+```
+
+### Running Tests
+
+There are several ways to run the tests:
+
+1. Using the test runner script (recommended):
+```bash
+# From project root directory
+python -m test.run_tests
+
+# Or from test directory
+cd test
+python run_tests.py
+```
+
+2. Using Python's unittest directly:
+```bash
+# Run all tests
+python -m unittest discover test
+
+# Run specific test file
+python -m unittest test.test_base
+python -m unittest test.test_branch
+```
+
+3. Using pytest (optional):
+```bash
+# Install pytest first
+pip install pytest
+
+# Run all tests
+pytest test/
+
+# Run specific test file
+pytest test/test_base.py
+```
+
+### Test Coverage
+
+The test suite covers:
+- Basic operations (init, add, commit)
+- Branch management (create, checkout, switch)
+- Remote operations (clone, fetch, push)
+- Data storage (objects, refs, index)
+- Diff functionality
+- Ignore patterns
+- Status reporting
+- Working directory operations
+
+### Running Tests During Development
+
+Before running tests:
+1. Ensure you're in your virtual environment (if using one)
+2. Install the package in development mode:
+```bash
+pip install -e .
+```
+
+Test output will show:
+- Number of tests run
+- Test results (pass/fail)
+- Any errors or failures
+- Test execution time
+
+### Adding New Tests
+
+When adding new features, corresponding tests should be added to maintain code quality. Tests should:
+- Be placed in the appropriate test file
+- Follow the existing naming convention (test_*.py)
+- Include clear docstrings explaining the test purpose
+- Cover both success and failure cases
 

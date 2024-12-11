@@ -96,12 +96,17 @@ def push (remote_path, refname):
         
         # Update index
         with data.get_index() as index:
-            for path, oid in base.get_tree(commit.tree).items():
+            tree = base.get_tree(commit.tree)
+            for path, oid in tree.items():
                 index[path] = oid
                 
-                # Ensure file exists in working directory
+                # Ensure parent directories exist
+                dir_path = os.path.dirname(path)
+                if dir_path:  # Only create directory if path is not empty
+                    os.makedirs(os.path.join(remote_path, dir_path), exist_ok=True)
+                
+                # Write file content
                 file_content = data.get_object(oid)
-                os.makedirs(os.path.dirname(path), exist_ok=True)
                 with open(os.path.join(remote_path, path), 'wb') as f:
                     f.write(file_content)
 

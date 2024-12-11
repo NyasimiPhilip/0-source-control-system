@@ -4,10 +4,15 @@ import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from test.test_base import TestBase
-from test.test_data import TestData
-from test.test_diff import TestDiff
-from test.test_remote import TestRemote
+def run_tests():
+    # Find and run all tests in the test directory
+    loader = unittest.TestLoader()
+    start_dir = os.path.dirname(os.path.abspath(__file__))
+    suite = loader.discover(start_dir, pattern='test_*.py')
+    
+    # Run tests with verbosity
+    runner = unittest.TextTestRunner(verbosity=2)
+    runner.run(suite)
 
 if __name__ == '__main__':
-    unittest.main()
+    run_tests()
