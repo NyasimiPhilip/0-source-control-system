@@ -84,6 +84,7 @@ pygit log
 # Create and switch branches
 pygit branch feature
 pygit checkout feature
+pygit branch
 
 # Make changes
 echo "New feature" > feature.txt
