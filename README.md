@@ -41,7 +41,7 @@ PyGit is a lightweight implementation of Git's core functionality in Python. Thi
 
 2. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/pygit.git
+   git clone https://github.com/NyasimiPhilip/0-source-control-system.git
    cd pygit
    ```
 
@@ -148,14 +148,13 @@ PyGit and Git both represent the repository's history as a directed acyclic grap
 ### Key Differences
 
 #### Simplified Model
-Unlike Git, which offers a comprehensive set of version control features, PyGit is a minimalist implementation focused on core functionality. Git provides advanced features like:
+Unlike Git, which offers a comprehensive set of version control features, PyGit is focused on core functionality. Git provides advanced features like:
 - Interactive rebasing
 - Stashing changes
 - Sophisticated conflict resolution
 - Submodule management
 - Extensive branching strategies
 
-PyGit strips away these complex features to provide a lightweight implementation that demonstrates the fundamental principles of version control.
 
 #### Single Remote Support
 Git supports multiple named remotes with complex remote management capabilities, including:
@@ -355,12 +354,3 @@ Test output will show:
 - Test results (pass/fail)
 - Any errors or failures
 - Test execution time
-
-### Adding New Tests
-
-When adding new features, corresponding tests should be added to maintain code quality. Tests should:
-- Be placed in the appropriate test file
-- Follow the existing naming convention (test_*.py)
-- Include clear docstrings explaining the test purpose
-- Cover both success and failure cases
-

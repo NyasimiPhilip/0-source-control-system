@@ -2,7 +2,6 @@ from . import data
 from .parser import create_parser
 
 def main():
-    #print("pygit CLI started")
     with data.change_git_dir('.'):
         parser = create_parser()
         args = parser.parse_args()
